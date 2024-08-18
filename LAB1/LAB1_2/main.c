@@ -5,7 +5,7 @@
 #define MAX_ROW 1000
 #define MAX_STR 31
 #define CMD 6
-#define FILE_NAME "log.txt"
+#define FILE_NAME "../log.txt"
 
 typedef struct{
     int year;
@@ -90,11 +90,11 @@ table_t readTable(){
     fscanf(fp, "%d", &tab.n_entries);
     for(int i=0; i<tab.n_entries; i++){
         fscanf(fp, "%s %s %s %s %s %s %d", tab.log[i].code, tab.log[i].departure, tab.log[i].arrival, tab.log[i].date_str, tab.log[i].timeD_str, tab.log[i].timeA_str, &tab.log[i].delay);
-        sscanf(tab.log[i].date_str, "%d %d %d", &tab.log[i].date.year, &tab.log[i].date.month, &tab.log[i].date.day);
-        sscanf(tab.log[i].timeD_str, "%d %d %d", &tab.log[i].timeD.h, &tab.log[i].timeD.min, &tab.log[i].timeD.sec);
-        sscanf(tab.log[i].timeA_str, "%d %d %d", &tab.log[i].timeA.h, &tab.log[i].timeA.min, &tab.log[i].timeA.sec);
+        sscanf(tab.log[i].date_str, "%d/%d/%d", &tab.log[i].date.year, &tab.log[i].date.month, &tab.log[i].date.day);
+        sscanf(tab.log[i].timeD_str, "%d:%d:%d", &tab.log[i].timeD.h, &tab.log[i].timeD.min, &tab.log[i].timeD.sec);
+        sscanf(tab.log[i].timeA_str, "%d:%d:%d", &tab.log[i].timeA.h, &tab.log[i].timeA.min, &tab.log[i].timeA.sec);
     }
-
+    fclose(fp);
     return tab;
 }
 
