@@ -8,7 +8,6 @@
 #define FILE_NAME "../log.txt"
 
 typedef enum {NONE, DATE, CODE, DEPARTURE, ARRIVAL} key_e;
-typedef enum {r_exit, r_printV, r_printF, r_orderD, r_orderC, r_orderDS, r_orderAS, r_searchC, r_searcDS} commands_e;
 
 typedef struct{
     int year;
@@ -48,8 +47,8 @@ int compareEntries(entry_t e1, entry_t e2, key_e k);
 int compareDates(date_t d1, date_t d2);
 int compareTimes(time_t t1, time_t t2);
 void printEntry(entry_t e, FILE *fp);
-int linearSearchCode(table_t *tab, char *code, int *index);
-int binarySearchCode(table_t *tab, char *code, int *index);
+int linearSearchCode(table_t *tab, char *code);
+int binarySearchCode(table_t *tab, char *code);
 void linearSearchStation(table_t *tab, char *station, int n);
 void binarySearchStation(table_t *tab, char *station, int n);
 
@@ -63,7 +62,7 @@ int main(void){
                         "Order by arrival station",
                         "Search by code",
                         "Search by departure station"};
-    int proceed = 1, choice, index, found, nChar;
+    int proceed = 1, choice, nChar;
     char outfile[MAX_STR], inputCode[MAX_STR], inputStation[MAX_STR];
 
     table_t tab;
@@ -76,7 +75,7 @@ int main(void){
             proceed = 0;
             break;
         case 1:
-            printOut(&tab, NULL);
+            printOut(&tab, stdout);
             break;
         case 2:
             printf("Enter output file name: ");
@@ -86,34 +85,32 @@ int main(void){
         case 3:
             printf("Ordering by date...\n");
             insertionSort(&tab, DATE);
-            printOut(&tab, NULL);
+            printOut(&tab, stdout);
+            break;
         case 4:
             printf("Ordering by code...\n");
             insertionSort(&tab, CODE);
-            printOut(&tab, NULL);
+            printOut(&tab, stdout);
             break;
         case 5:
             printf("Ordering by departure station...\n");
             insertionSort(&tab, DEPARTURE);
-            printOut(&tab, NULL);
+            printOut(&tab, stdout);
             break;
         case 6:
             printf("Ordering by arrival station...\n");
             insertionSort(&tab, ARRIVAL);
-            printOut(&tab, NULL);
+            printOut(&tab, stdout);
             break;
         case 7:
             printf("Enter route code to search: ");
             scanf("%s", inputCode);
-            index = -1;
-            found = 0;
-            if(tab.key == CODE) found = binarySearchCode(&tab, inputCode, &index);                             // binary search on already sorted table
-            else found = linearSearchCode(&tab, inputCode, &index);
-            if(found) printEntry(tab.log[index], stdout);
+            if(tab.key == CODE) binarySearchCode(&tab, inputCode);                      // binary search on already sorted table
+            else linearSearchCode(&tab, inputCode);
             break;
         case 8:
             printf("Enter departure station to search: ");
-            scanf("%s%n", inputStation, &nChar);                                                                // nChar needed to detect only partial matches
+            scanf("%s%n", inputStation, &nChar);                                        // nChar needed to detect only partial matches
             if(tab.key == DEPARTURE) binarySearchStation(&tab, inputStation, nChar-1);
             else linearSearchStation(&tab, inputStation, nChar-1);
             break;
@@ -141,18 +138,18 @@ void readTable(table_t *tab){
 }
 
 void printCommands(char *commands[], int *choice){
-    printf("MENU:\n");
+    printf("\nMENU:\n");
     for(int i=0; i<CMD; i++) printf("%2d\t>\t%s\n", i, commands[i]);
     scanf(" %d", choice);
 }
 
 void printOut(table_t *tab, char *outfile){
     FILE *fp;
-    if(outfile == NULL) fp = stdout;
-    else fp = fopen(outfile, "w");
+    if(outfile != stdout) fp = fopen(outfile, "w");
+    else fp = stdout;
 
     for(int i=0; i < tab->n_entries; i++) printEntry(tab->log[i], fp);
-    fclose(fp);
+    if(outfile != stdout) fclose(fp);
 }
 
 void printEntry(entry_t e, FILE *fp){
@@ -166,7 +163,7 @@ void insertionSort(table_t *tab, key_e key){
     for(i=l+1; i<=r; i++){
         e = tab->log[i];
         j=i-1;
-        while(j>=1 && compareEntries(e, tab->log[j], key) < 0){
+        while(j>=l && compareEntries(e, tab->log[j], key) < 0){
             tab->log[j+1] = tab->log[j];
             j--;
         }
@@ -207,28 +204,42 @@ int compareTimes(time_t t1, time_t t2){
     else return 0;
 }
 
-int linearSearchCode(table_t *tab, char *code, int *index){
+int linearSearchCode(table_t *tab, char *code){
     int i=0, found=0;
-    while(i < tab->n_entries && strcmp(tab->log[i].code, code)!=0) i++;
-    if(i < tab->n_entries){
-        *index = i;
-        found = 1;
+    while(i < tab->n_entries){
+        if(strcmp(tab->log[i].code, code)==0){
+            printEntry(tab->log[i], stdout);
+            found = 1;
+        }
+        i++;
     }
-    return found;
+    if(!found) printf("Entry not found!\n");
 }
 
-int binarySearchCode(table_t *tab, char *code, int *index){
-    int l=0, r=tab->n_entries-1, m, cmp;
+int binarySearchCode(table_t *tab, char *code){
+    int found=0, l=0, r=tab->n_entries-1, m, cmp, i, j;
 
-    if(r<0) return 0;
-    while(l<=r){
+    while(l<=r && !found){
         m = (l+r)/2;
         cmp = strcmp(tab->log[m].code, code);
-        if(cmp==0) *index = m;
-        else if(cmp<0) l=m+1;
-        else r=m-1;
+        if(cmp==0) found=1;
+        else if(cmp<0) l = m+1;
+        else r = m-1;
     }
-    return -1;
+
+    if(found){                                                                          // at least one entry was found
+        i=m;
+        j=m-1;
+        while(i<tab->n_entries && strcmp(tab->log[i].code, code)==0){                   // prints matching entries on the right
+            printEntry(tab->log[i], stdout);
+            i++;
+        }
+        while(j>=0 && strcmp(tab->log[j].code, code)==0){                               // prints matching entries on the left
+            printEntry(tab->log[j], stdout);
+            j--;
+        }
+    }
+    else printf("Entry not found!\n");
 }
 
 void linearSearchStation(table_t *tab, char *station, int n){
@@ -254,14 +265,14 @@ void binarySearchStation(table_t *tab, char *station, int n){
         else r = m-1;
     }
 
-    if(found){                                                                          // at least one entry was found
+    if(found){
         i=m;
         j=m-1;
-        while(i<tab->n_entries && strncmp(tab->log[i].departure, station, n)==0){              // prints matching entries on the right
+        while(i<tab->n_entries && strncmp(tab->log[i].departure, station, n)==0){
             printEntry(tab->log[i], stdout);
             i++;
         }
-        while(j>=0 && strncmp(tab->log[j].departure, station, n)==0){                          // prints matching entries on the left
+        while(j>=0 && strncmp(tab->log[j].departure, station, n)==0){
             printEntry(tab->log[j], stdout);
             j--;
         }

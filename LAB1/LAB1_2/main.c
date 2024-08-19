@@ -36,7 +36,7 @@ typedef struct{
     entry_t log[MAX_ROW];
 } table_t;
 
-typedef enum {r_date, r_departure, r_arrival, r_delay, r_TOTdelay, r_end} command_e;            // standard procedure to handle menu interface
+typedef enum {r_date, r_departure, r_arrival, r_delay, r_TOTdelay, r_end} command_e;            // standard procedure to handle menu interfaces
 
 table_t readTable();
 void printCommands(char commands[][MAX_STR]);
