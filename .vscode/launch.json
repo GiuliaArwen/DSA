@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/ARCHIVIO/POLI/DSA/LAB1/LAB1_2",
-      "program": "c:/ARCHIVIO/POLI/DSA/LAB1/LAB1_2/build/Debug/outDebug",
+      "cwd": "c:/ARCHIVIO/POLI/DSA/LAB1/LAB1_4",
+      "program": "c:/ARCHIVIO/POLI/DSA/LAB1/LAB1_4/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
