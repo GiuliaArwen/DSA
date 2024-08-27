@@ -34,15 +34,15 @@ activity_t *readFile(FILE *fp, int *N){
     return act;
 }
 
-void actSel(int N, activity_t *act){        // wrapper for recursive function
+void actSel(int N, activity_t *act){                                    // wrapper for recursive function
     int *sol = calloc(N, sizeof(int));
     int *bestSol = calloc(N, sizeof(int));
     int duration = 0;
 
     actSelR(0, N, act, sol, bestSol, 0, &duration);
     printf("Solution with overall longest duration: %d\n", duration);
-    for(int i=0; i<N; i++)                  // makes sure the solution printed is the best match
-        if(bestSol[i]) printf(" (%d,%d) ", act[i].start, act[i].end);
+    for(int i=0; i<N; i++)                                              
+        if(bestSol[i]) printf(" (%d,%d) ", act[i].start, act[i].end);   // bestSol is set to 1 only if the i-th activity is included
     printf("\n");
     
     free(sol);
@@ -51,18 +51,18 @@ void actSel(int N, activity_t *act){        // wrapper for recursive function
 }
 
 void actSelR(int pos, int N, activity_t *act, int *sol, int *bestSol, int time, int *bestTime){
-    if(pos >= N){
-        if(time > *bestTime){
+    if(pos >= N){                                                       // exit condition: end of array reached
+        if(time > *bestTime){                                           // updates best solution if a better match is found
             *bestTime = time;
             for(int i=0; i<N; i++) bestSol[i] = sol[i];
         }
         return;
     }
 
-    sol[pos] = 0;
+    sol[pos] = 0;                                                       // tries excluding the current solution
     actSelR(pos+1, N, act, sol, bestSol, time, bestTime);
 
-    if(!overlap(act, sol, pos)){
+    if(!overlap(act, sol, pos)){                                        // tries including the current solution as long at it doesn't overlap
         sol[pos] = 1;
         actSelR(pos+1, N, act, sol, bestSol, time + (act[pos].end - act[pos].start), bestTime);
     }
@@ -71,7 +71,7 @@ void actSelR(int pos, int N, activity_t *act, int *sol, int *bestSol, int time, 
 
 int overlap(activity_t *act, int *sol, int pos){
     for(int i=0; i<pos; i++){
-        if(sol[i] != 0)
+        if(sol[i] != 0)                                                 // only considers activities included in the solution
             if(act[i].start < act[pos].end && act[pos].start < act[i].end) return 1;
     }
     return 0;
