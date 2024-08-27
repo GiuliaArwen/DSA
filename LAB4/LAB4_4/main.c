@@ -51,28 +51,28 @@ void solve(char *gems, int *gemsQTY, int *gemsVAL, int max, int maxrep){
 
 int rep_disp(int pos, int val, int *sol, int *gemsQTY, int *gemsVAL, int *gemsUSED, int *gemsREP, int max, int prev, int *bestSol, int *bestVal, int *bestL, int maxrep){
     int prevRep=0;
-    if(val > *bestVal){
-        if(gemsUSED[0] <= gemsUSED[3]){
+    if(val > *bestVal){                                                         // updates best values in case of match
+        if(gemsUSED[0] <= gemsUSED[3]){                                         // checks if the number of emeralds is greater than that of sapphires
             *bestVal = val;
             *bestL = pos;
             for(int i=0; i<pos; i++) bestSol[i] = sol[i];
         }
     }
-    if(pos>=max) return 1;
+    if(pos>=max) return 1;                                                      // exit condition: max length reached
     for(int i=0; i<MAX; i++){
-        if(gemsQTY[i]-gemsUSED[i] > 0){
+        if(gemsQTY[i]-gemsUSED[i] > 0){                                         // checks stone's availability
             if(prev!=-1){
                 if((prev == 0 || prev == 2) && (i != 0 && i != 1)) continue;
                 if((prev == 1 || prev == 3) && (i != 3 && i != 2)) continue;
             }
-            if(prev == i)
+            if(prev == i)                                                       // control over repetitions
                 if(gemsREP[i]+1 > maxrep) continue;
             if(prev == -1) gemsREP[i] = 1;
             else{
                 if(prev == i) gemsREP[i]++;
                 else{
                     gemsREP[i] = 1;
-                    prevRep = gemsREP[prev];
+                    prevRep = gemsREP[prev];                                    // stores valure for future backtracking
                     gemsREP[prev] = 0;
                 }
             }
@@ -80,7 +80,7 @@ int rep_disp(int pos, int val, int *sol, int *gemsQTY, int *gemsVAL, int *gemsUS
             sol[pos] = i;
             if(rep_disp(pos+1, val + gemsVAL[i], sol, gemsQTY, gemsVAL, gemsUSED, gemsREP, max, i, bestSol, bestVal, bestL, maxrep)) return 1;
             
-            gemsUSED[i]--;
+            gemsUSED[i]--;                                                      // backtracks in case of failure
             if(prev == -1) gemsREP[i] = 0;
             else{
                 if(prev == i) gemsREP[i]--;
