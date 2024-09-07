@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define LEN 100
 #define MIN 1
 
@@ -25,6 +26,6 @@ void printStat(FILE *fp, stat_t s, int limit);
 void readInv(FILE *fp, inv_t *inv);
 void printInv(FILE *fp, inv_t inv);
 tabInv_t *readTabInv(char *filename);
-void printTabinv(FILE *fp, tabInv_t *tabInv);
+void printTabInv(FILE *fp, tabInv_t *tabInv);
 
 #endif

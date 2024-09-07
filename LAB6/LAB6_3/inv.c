@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> 
 #include "inv.h"
 
 int readStat(FILE *fp, stat_t *stat){
@@ -9,7 +10,7 @@ int readStat(FILE *fp, stat_t *stat){
 
 void readInv(FILE *fp, inv_t *inv){
     char tmpName[LEN], tmpType[LEN];
-    if(inv == NULL) return 0;
+    if(inv == NULL) return;
     fscanf(fp, "%s %s", tmpName, tmpType);
     inv->name = strdup(tmpName);
     inv->type = strdup(tmpType);

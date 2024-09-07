@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "hero.h"
 
@@ -20,7 +21,7 @@ int readHero(FILE *fp, hero_t *hero){
 }
 
 void printHero(FILE *fp, hero_t hero){
-    fprintf(fp, "%s, <> %s [%s]\n\t BASE: ", hero.code, hero.name, hero.role);
+    fprintf(fp, "%s, %s [%s]\n\t BASE: ", hero.code, hero.name, hero.role);
     printStat(fp, hero.h_stat, 1);
     if(hero.equip->used > 0){
         fprintf(fp, "\t +EQ: ");
@@ -52,7 +53,7 @@ void printTabHero(FILE *fp, tabHero_t *tabHero){
 }
 
 linkHero newNodeHero(hero_t hero, linkHero next){
-    linkHero new = calloc(1, sizeof(*new)); //???
+    linkHero new = calloc(1, sizeof(*new));         // sizeof(linkHero) would crash as the struct is still not fully defined
     if(new == NULL) return NULL;
     new->hero = hero;
     new->next = next;
@@ -65,8 +66,8 @@ void insertNode(tabHero_t *tabHero, hero_t hero){
     if(new == NULL || tabHero == NULL) return;
     if(tabHero->head == NULL) tabHero->head = tabHero->tail = new;
     else{
-        tabHero->tail = new;
         tabHero->tail->next = new;
+        tabHero->tail = new;
     }
 }
 
@@ -102,7 +103,7 @@ void modifyEquip(equip_t *equip, tabInv_t *tabInv){
     char equipInput[LEN];
 
     printf("Which action do you want to take?\n");
-    if(equip->used = 0)
+    if(equip->used > 0)
         printf("\t 0 - Removal\n");
     if(equip->used < EQUIP_SLOT)
         printf("\t 1 - Addition\n");
@@ -120,14 +121,14 @@ void modifyEquip(equip_t *equip, tabInv_t *tabInv){
                 if(equip->equipArr[i] == NULL) continue;
                 if(strcmp(equip->equipArr[i]->name, equipInput) == 0){
                     equip->used--;
-                    equip->equipArr[i] == NULL;
+                    equip->equipArr[i] = NULL;
                     break;
                 }
             }
             break;
         case 1:
             for(int i=0; i<tabInv->nInv; i++){
-                if(strcmp(tabInv->invArr[i], equipInput) == 0){
+                if(strcmp(tabInv->invArr[i].name, equipInput) == 0){
                     for(int j=0; j<EQUIP_SLOT; j++)
                         if(equip->equipArr[j] == NULL){
                             equip->equipArr[j] = &(tabInv->invArr[i]);
