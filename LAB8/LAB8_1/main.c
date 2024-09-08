@@ -120,7 +120,7 @@ int completeDiag(diagonal_t *d, elements_t *E, int diff0, int acro){
     for(int i=0; i<E->nE; i++)
         E->elements[i].taken = 0;
     for(int i=0; i<MAX; i++){                                                    // searches for 5 elements
-        next = nextBest(E, i==0, dir, diff, diff + diff0, acro, 0);              // assumes element acrobatica and inability to change direction
+        next = nextBest(E, i==0, dir, diff, diff + diff0, acro, 0);              // assumes element acro=1 and inability to change direction
         if(acro && next<0)                                                       // if it fails
             next = nextBest(E, i==0, dir, diff, diff + diff0, 0, 1);             // retry assuming acro = 0 and the ability to change direction
         if(next < 0)                                                             // if it still fails, break out of the cycle
@@ -133,7 +133,7 @@ int completeDiag(diagonal_t *d, elements_t *E, int diff0, int acro){
         acro = verifyAcro(d, E, i, acro);
     }
     d->difficulty = diff;
-    return(d->nE > 0 && acro == 0);                                              // a solution is found if these requirements are met
+    return(d->nE > 0 && acro == 0);                                              // a solution is found
 }
 
 int nextBest(elements_t *E, int first, int dir, int diff, int diffTot, int acro, int changeDir){
@@ -142,13 +142,13 @@ int nextBest(elements_t *E, int first, int dir, int diff, int diffTot, int acro,
         if(!E->elements[i].taken && (E->elements[i].in == dir) && !(first && E->elements[i].prev) && (diff + E->elements[i].difficulty <= DD) && (diffTot + E->elements[i].difficulty <= DP))
             if(acro == 0 || E->elements[i].type == acro || (acro == 3 && E->elements[i].type > 0)){
                 if(changeDir && E->elements[i].out != dir)
-                    return i;
+                    return i;                                                    // immediately returns the index
                 if(bestIndex < 0 || bestElement(&(E->elements[i]), &(E->elements[bestIndex])))
-                    bestIndex = i;
+                    bestIndex = i;                                               // stores index
             }
     }
     if(bestIndex >= 0)
-        E->elements[bestIndex].taken = 1;
+        E->elements[bestIndex].taken = 1;                                        // updates flag
     return bestIndex;
 }
 
@@ -159,7 +159,7 @@ int bestElement(element_t *e1, element_t *e2){
         case relative_value_c:
             return e1->relVal > e2->relVal;
         case medium_value_c:
-            return abs(e1->val - MEDVAL) < abs(e2->val - MEDVAL);
+            return abs(e1->val - MEDVAL) < abs(e2->val - MEDVAL);                // chooses element closer to the medium value
         default:
             return 0;
     }
@@ -170,11 +170,10 @@ int verifyAcro(diagonal_t *d, elements_t *E, int i, int acro){
     int prev = d->indexE[i-1];
     if((acro == 1 || acro == 2) && E->elements[curr].type == acro)
         return 0;                                                                // requirement met
-    else if(acro == 3 && i>0 && E->elements[curr].type != 0){                    // two consecutives types !=0 equal to sequence
+    else if(acro == 3 && i>0 && E->elements[curr].type != 0)                     // two consecutives types !=0 equal to sequence
         if(E->elements[prev].type != 0)
-            return 0;
-    }
-    return acro;
+            return 0;                                                            // requirement met
+    return acro;                                                                 // else return acro != 0, requirement not met
 }
 
 int checkBonus(diagonals_t *program, elements_t *E){
