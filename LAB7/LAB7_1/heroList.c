@@ -90,7 +90,7 @@ void deleteHeroList(heroList_t heroList, char *code){
 
 void freeHeroList(heroList_t heroList){
     linkHero x, next;
-    for(x = heroList->head; x != NULL; x = x->next){
+    for(x = heroList->head; x != NULL; x = next){
         next = x->next;
         freeHero(&x->hero);
         free(x);

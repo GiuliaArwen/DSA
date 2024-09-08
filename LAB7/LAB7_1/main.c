@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "heroList.h"
 #include "invArray.h"
 #include "hero.h"
-#include "heroList.h"
 
 #define FILENAME1 "heroes.txt"
 #define FILENAME2 "inventory.txt"

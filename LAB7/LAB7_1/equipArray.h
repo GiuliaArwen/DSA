@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "invArray.h"
-
 #define SLOT 8
+
+#include "invArray.h"
 
 typedef struct equipArray_s *equipArray_t;
 

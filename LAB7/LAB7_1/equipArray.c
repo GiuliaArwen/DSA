@@ -67,6 +67,7 @@ void updateEquipArray(equipArray_t equipArray, invArray_t invArray){
                 if(equipArray->equip[i] == -1){
                     equipArray->equip[i] = eq;
                     equipArray->used++;
+                    break;
                 }
             break;
         default:

@@ -10,7 +10,7 @@ void readStat(FILE *fp, stat_t *stat){
 
 void printStat(FILE *fp, stat_t *stat, int limit){
     if(limit)
-        fprintf(fp, "HP = %d, MP = %d, ATK = %d, DEF = %d, MAG = %d, SPR = %d\n", (stat->hp) > 0 ? stat->hp : MIN, (stat->mp) > 0 ? stat->mp : MIN, (stat->atk) > 0 ? stat->atk : MIN, (stat->def) > 0 ? stat->def : MIN, (stat->mag) > 0 ? stat->mag : MIN, (stat->spr) > 0 ? stat->spr : MIN);
+        fprintf(fp, "HP = %d, MP = %d, ATK = %d, DEF = %d, MAG = %d, SPR = %d\n", (stat->hp > 0 ? stat->hp : MIN), (stat->mp > 0 ? stat->mp : MIN), (stat->atk > 0 ? stat->atk : MIN), (stat->def > 0 ? stat->def : MIN), (stat->mag > 0 ? stat->mag : MIN), (stat->spr > 0 ? stat->spr : MIN));
     else
         fprintf(fp, "HP = %d, MP = %d, ATK = %d, DEF = %d, MAG = %d, SPR = %d\n", stat->hp, stat->mp, stat->atk, stat->def, stat->mag, stat->spr);
 }

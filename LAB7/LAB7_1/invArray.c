@@ -17,8 +17,8 @@ invArray_t initInvArray(){
 
 void readInvArray(char *filename, invArray_t invArray){
     FILE *fp = fopen(filename, "r");
-    if(fp == NULL) return;
     if(invArray == NULL) return;
+    if(fp == NULL) return;
     fscanf(fp, "%d", &invArray->nInv);
     invArray->inv = calloc(invArray->nInv, sizeof(inv_t));
     for(int i=0; i<invArray->nInv; i++)

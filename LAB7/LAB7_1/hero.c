@@ -5,7 +5,7 @@
 #include "hero.h"
 
 static void updateStatEquipHero(hero_t *hero, invArray_t invArray){
-    int index;
+    int index=0;
     inv_t *inv;
     stat_t statEq;
     hero->eq_stat = hero->h_stat;
