@@ -13,68 +13,72 @@ typedef struct{
     char *name;
     int type;
     int in, out;
-    int prev;
-    int final;
+    int prev, final;
     float value;
     int difficulty;
 } element_t;
 
 typedef struct{
     element_t *elements;
-    int nEl;
+    int nE;
 } elements_t;
 
 typedef struct{
-    int *el;
-    int nEl;
+    int *indexE;
+    int nE;
     float value;
     int difficulty;
 } diagonal_t;
 
 typedef struct{
     diagonal_t *diagonals;
-    int nDiag, maxDiag;
+    int nD, maxD;
 } diagonals_t;
 
 diagonals_t *initDiagonals();
 elements_t *readElements();
 void generateDiagonals(elements_t *E, diagonals_t *D, int dd);
 void generatePrograms(elements_t *E, diagonals_t *D, int dp);
-void rep_disp(elements_t *E, diagonals_t *D, int dd, int pos, int diff, int acro, int dir, int fin, int *diag);
+void rep_disp(elements_t *E, diagonals_t *D, int dd, int pos, int diff, int type, int dir, int fin, int *sol);
 void rep_comb(elements_t *E, diagonals_t *D, int dp, int pos, int diff, int *sol, int *bestSol, float *bestVal, int *bestBonus, int *num, int start);
-int checkValidity(elements_t *E, diagonals_t *D, int *sol, int n, float *val, int *bon);
+int checkValidity(elements_t *E, diagonals_t *D, int *sol, int n, float *val, int *B);
 
 int main(void){
-    int dd = DD, dp = DP;
     diagonals_t *D = initDiagonals();
     elements_t *E = readElements();
+
     printf("Generating diagonals...\n");
-    generateDiagonals(E,D,dd);
-    printf("%d diagonals available.\n", D->nDiag);
+    generateDiagonals(E,D,DD);
+    printf("%d diagonals available.\n", D->nD);
+
     printf("Generating programs...\n");
-    generatePrograms(E,D,dp);
+    generatePrograms(E,D,DP);
+
     return 0;
 }
 
 diagonals_t *initDiagonals(){
     diagonals_t *D = malloc(1*sizeof(*D));
     D->diagonals = calloc(1, sizeof(diagonal_t));
-    D->nDiag = 0;
-    D->maxDiag = 1;
+    D->nD = 0;
+    D->maxD = 1;
     return D;
 }
 
 elements_t *readElements(){
     char tmpName[LEN];
-    FILE *fp = fopen(FILENAME, "r");
-    if(fp == NULL) return NULL;
+
     elements_t *E = malloc(1*sizeof(*E));
     if(E == NULL) return NULL;
-    fscanf(fp, "%d", &E->nEl);
-    E->elements = calloc(E->nEl, sizeof(element_t));
+
+    FILE *fp = fopen(FILENAME, "r");
+    if(fp == NULL) return NULL;
+
+    fscanf(fp, "%d", &E->nE);
+    E->elements = calloc(E->nE, sizeof(element_t));
     if(E->elements == NULL) return NULL;
 
-    for(int i=0; i<E->nEl; i++){
+    for(int i=0; i < E->nE; i++){
         fscanf(fp, "%s %d %d %d %d %d %f %d", tmpName, &E->elements[i].type, &E->elements[i].in, &E->elements[i].out, &E->elements[i].prev, &E->elements[i].final, &E->elements[i].value, &E->elements[i].difficulty);
         E->elements[i].name = strdup(tmpName);
     }
@@ -82,53 +86,55 @@ elements_t *readElements(){
 }
 
 void generateDiagonals(elements_t *E, diagonals_t *D, int dd){
-    int *diag = calloc(MAX, sizeof(int));
-    rep_disp(E, D, dd, 0, 0, 0, 1, 0, diag);
+    int *sol = calloc(MAX, sizeof(int));
+    rep_disp(E, D, dd, 0, 0, 0, 1, 0, sol);
 }
 
-void rep_disp(elements_t *E, diagonals_t *D, int dd, int pos, int diff, int acro, int dir, int fin, int *diag){
-    if(pos>0){
-        if(acro>0){
-            if(D->nDiag == D->maxDiag){
-                D->maxDiag *= 2;
-                D->diagonals = realloc(D->diagonals, D->maxDiag*sizeof(diagonal_t));
+void rep_disp(elements_t *E, diagonals_t *D, int dd, int pos, int diff, int type, int dir, int fin, int *sol){
+    if(pos>0){                                                          // if an element is added
+        if(type>0){                                                     // checks for acrobatic type [1], [2]
+            if(D->nD == D->maxD){                                       // if reached the maximum (initially set to 1), realloc
+                D->maxD *= 2;
+                D->diagonals = realloc(D->diagonals, D->maxD*sizeof(diagonal_t));
                 if(D->diagonals == NULL) exit(-1);
             }
-            D->diagonals[D->nDiag].difficulty = diff;
-            D->diagonals[D->nDiag].nEl = pos;
-            D->diagonals[D->nDiag].el = malloc(pos * sizeof(int));
-            D->diagonals[D->nDiag].value = 0.0;
-            for(int i=0; i<pos; i++){
-                D->diagonals[D->nDiag].value += E->elements[diag[i]].value;
-                D->diagonals[D->nDiag].el[i] = diag[i];
+            D->diagonals[D->nD].difficulty = diff;                      // creates a new diagonal with stored values
+            D->diagonals[D->nD].nE = pos;
+            D->diagonals[D->nD].indexE = malloc(pos * sizeof(int));
+            D->diagonals[D->nD].value = 0.0;
+            for(int i=0; i<pos; i++){                                   // for each diagonal, updates value
+                D->diagonals[D->nD].value += E->elements[sol[i]].value;
+                D->diagonals[D->nD].indexE[i] = sol[i];                 // stores the index for the element
             }
-            D->nDiag++;
+            D->nD++;                                                    // nD used as iteration index for chosen diagonals
         }
     }
-    if(pos >= MAX || fin) return;
+    if(pos >= MAX || fin) return;                                       // returns if reached 3 diagonals or final element
 
-    for(int i=0; i<E->nEl; i++){
-        if(diff + E->elements[i].difficulty > DD) continue;
-        if(dir != E->elements[i].in) continue;
-        if(pos == 0 && E->elements[i].prev) continue;
-        diag[pos] = i;
-        rep_disp(E, D, dd, pos+1, diff + E->elements[i].difficulty, acro + E->elements[i].type, E->elements[i].out, E->elements[i].final, diag);
+    for(int i=0; i<E->nE; i++){
+        if(diff + E->elements[i].difficulty > DD) continue;             // skips if exceeded max diagonal difficulty
+        if(dir != E->elements[i].in) continue;                          // skips if the entry/exit directions don't match
+        if(pos == 0 && E->elements[i].prev) continue;                   // skips if the first element has to follow another one
+        sol[pos] = i;
+        rep_disp(E, D, dd, pos+1, diff + E->elements[i].difficulty, type + E->elements[i].type, E->elements[i].out, E->elements[i].final, sol);
     }
 }
 
 void generatePrograms(elements_t *E, diagonals_t *D, int dp){
-    int d, bonus, num = 0;
-    float bestValue = -1.0;
+    int d;                                                              // d stores the index of the diagonal
+    int bonus;                                                          // bonus stores the index of the diagonal with bonus
+    int N = 0;                                                          // N is the number of diagonals included in the best program
+    float bestValue = -1.0;                                          
     int *sol = malloc(DIAG * sizeof(int));
     int *bestSol = malloc(DIAG * sizeof(int));
-    rep_comb(E, D, dp, 0, 0, sol, bestSol, &bestValue, &bonus, &num, 0);
-    if(num > 0){
+    rep_comb(E, D, dp, 0, 0, sol, bestSol, &bestValue, &bonus, &N, 0);
+    if(N > 0){                                                          // best program is found
         printf("TOT = %f\n", bestValue);
-        for(int i=0; i<num; i++){
+        for(int i=0; i<N; i++){
             d = bestSol[i];
             printf("DIAG %d > %.3f %s\n", d, D->diagonals[d].value, ((bonus == i) ? "* 1.5 (BONUS)" : ""));
-            for(int j=0; j < D->diagonals[d].nEl; j++)
-                printf("%s ", E->elements[D->diagonals[d].el[j]].name);
+            for(int j=0; j < D->diagonals[d].nE; j++)
+                printf("%s ", E->elements[D->diagonals[d].indexE[j]].name);
             printf("\n");
         }
     }
@@ -137,49 +143,49 @@ void generatePrograms(elements_t *E, diagonals_t *D, int dp){
 void rep_comb(elements_t *E, diagonals_t *D, int dp, int pos, int diff, int *sol, int *bestSol, float *bestVal, int *bestBonus, int *num, int start){
     int bonus;
     float val = 0.0;
-    if(pos >= DIAG){
-        if(checkValidity(E, D, sol, pos, &val, &bonus))
-            if(val > *bestVal){
+    if(pos >= DIAG){                                                    // exit condition: reached maximum diag number
+        if(checkValidity(E, D, sol, pos, &val, &bonus))                 // checks validity
+            if(val > *bestVal){                                         // updates best case
                 *num = pos;
                 *bestVal = val;
                 *bestBonus = bonus;
-                memcpy(bestSol, sol, pos*sizeof(int));
+                memcpy(bestSol, sol, pos*sizeof(int));                  // copies the contents of sol in bestSol
             }
         return;
     }
-    for(int i=start; i < D->nDiag; i++){
-        if(diff + D->diagonals[i].difficulty > dp) continue;
-        sol[pos] = i;
+    for(int i=start; i < D->nD; i++){
+        if(diff + D->diagonals[i].difficulty > dp) continue;            // skips if exceeded maximum program difficulty
+        sol[pos] = i;                                                   // otherwise stores solution
         rep_comb(E, D, dp, pos+1, diff + D->diagonals[i].difficulty, sol, bestSol, bestVal, bestBonus, num, i);
     }
 }
 
-int checkValidity(elements_t *E, diagonals_t *D, int *sol, int n, float *val, int *bon){
+int checkValidity(elements_t *E, diagonals_t *D, int *sol, int n, float *val, int *B){
     int bonus = -1;
-    int fwd=0, bwd=0, seq=0;
-    for(int i=0; i<n; i++){
-        int dseq = 0;
-        for(int j=0; j<D->diagonals[sol[i]].nEl; j++){
-            if(E->elements[D->diagonals[sol[i]].el[j]].type == 2){
+    int fwd=0, bwd=0, seq=0;                                            // flag to consider consecutive acros
+    for(int i=0; i<n; i++){                                             // iterates over diagonals
+        int dseq = 0;                                                   // counter for seq
+        for(int j=0; j<D->diagonals[sol[i]].nE; j++){                   // iterates over elements
+            if(E->elements[D->diagonals[sol[i]].indexE[j]].type == 2){
                 fwd = 1;
                 dseq++;
             }
-            else if(E->elements[D->diagonals[sol[i]].el[j]].type == 1){
+            else if(E->elements[D->diagonals[sol[i]].indexE[j]].type == 1){
                 bwd = 1;
                 dseq++;
             }
             else
                 dseq = 0;
-            if(j == (D->diagonals[sol[i]].nEl-1) && E->elements[D->diagonals[sol[i]].el[j]].type > 0 && E->elements[D->diagonals[sol[i]].el[j]].difficulty > 7)
+            if(j == (D->diagonals[sol[i]].nE-1) && E->elements[D->diagonals[sol[i]].indexE[j]].type > 0 && E->elements[D->diagonals[sol[i]].indexE[j]].difficulty >= 8)
                 if(bonus == -1 || (D->diagonals[sol[bonus]].value < D->diagonals[sol[i]].value))
                     bonus = i;
-            if(dseq >= 2) seq = 1;
+            if(dseq >= 2) seq = 1;                                      // updates flag
         }
     }
     if(fwd && bwd && seq){
         for(int i=0; i<n; i++)
             (*val) += D->diagonals[sol[i]].value * ((i == bonus) ? 1.50 : 1.00);
-        *bon = bonus;
+        *B = bonus;
         return 1;
     }
     return 0;
