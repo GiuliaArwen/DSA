@@ -56,9 +56,9 @@ Graph GRAPHinit(int V){
 
 void GRAPHfree(Graph g, int listgen){
     link tmp, t;
-    for(int v=0; v < g->V; v++) free(g->madj[v]);
+    for(int v=0; v < g->V; v++) free(g->madj[v]);       // frees matrix
     free(g->madj);
-    if(listgen){
+    if(listgen){                                        // eventually frees list
         for(int v=0; v < g->V; v++)
             for(t = g->ladj[v]; t != NULL;){
                 tmp = t;
@@ -72,15 +72,15 @@ void GRAPHfree(Graph g, int listgen){
 
 static Edge EDGEcreate(int v, int w, int wt){
     Edge e;
-    e.v  = v;
-    e.w  = w;
+    e.v = v;
+    e.w = w;
     e.wt = wt;
     return e;
 }
 
 static void insertE(Graph g, Edge e){
     int v = e.v, w = e.w, wt = e.wt;
-    if(g->madj[v][w] == 0) g->E++;
+    if(g->madj[v][w] == 0) g->E++;                      // if there wasn't an edge, increase counter
     g->madj[v][w] = wt;
     g->madj[w][v] = wt;
 }
@@ -90,7 +90,7 @@ void GRAPHinsertE(Graph g, int v, int w, int wt){
 }
 
 int GRAPHmat2list(Graph g){
-    if(g->ladj != NULL) return 0;
+    if(g->ladj != NULL) return 0;                       // there already is a list
     if(g->madj == NULL) return -1;
     g->ladj = calloc(g->V, sizeof(link));
     if(g->ladj == NULL) return -1;
@@ -124,7 +124,7 @@ void GRAPHstore(Graph g, ST st){
 static int adjacent(Graph g, int v, int w){
     if(g == NULL) return 0;
     if(g->madj == NULL) return 0;
-    return(g->madj[v][w] > 0);
+    return(g->madj[v][w] > 0);                          // meaning there's an edge
 }
 
 int GRAPHcheck3clique(Graph g, int x, int y, int z){
