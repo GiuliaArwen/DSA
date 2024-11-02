@@ -17,22 +17,22 @@ static int **MATRIXint(int r, int c, int val){
     int i, j, **t;
     t = malloc(r * sizeof(int *));
     if(t == NULL) return NULL;
-    for(int i=0; i<r; i++){
+    for(i=0; i<r; i++){
         t[i] = malloc(c * sizeof(int));
         if(t[i] == NULL) return NULL;
     }
-    for(int i=0; i<r; i++)
-        for(int j=0; j<c; j++)
+    for(i=0; i<r; i++)
+        for(j=0; j<c; j++)
             t[i][j] = val;
     return t;
 }
 
-char *GETName(Vertex *v){
+char *GETname(Vertex *v){
     return (v->name);
 }
 
 Graph GRAPHinit(int nV){
-    Graph g = malloc(sizeog(*g));
+    Graph g = malloc(sizeof(*g));
     if(g == NULL) return NULL;
 
     g->V = nV;
@@ -55,11 +55,11 @@ Graph GRAPHload(FILE *fp){
     char src[MAXL], dst[MAXL];
     Graph g;
 
-    fscanf(fp, "%s", src);
+    fscanf(fp, "%d", &V);
     g = GRAPHinit(V);
     if(g == NULL) return NULL;
 
-    for(int i=0; i<V; i++){
+    for(i=0; i<V; i++){
         fscanf(fp, "%s", src);
         strcpy(g->arr[i].name, src);
         STinsert(g->st, src, i);
@@ -93,7 +93,7 @@ void EDGEstore(Graph g, Edge e, FILE *fp){
     fprintf(fp, "%s %s %d\n", GETname(&(g->arr[e.v])), GETname(&(g->arr[e.w])), e.wt);
 }
 
-void GRAPHinsert(Graph g, Edge e){
+void GRAPHinsertE(Graph g, Edge e){
     int v = e.v, w = e.w, wt = e.wt;
     g->madj[v][w] = wt;
     g->E++;
@@ -102,7 +102,7 @@ void GRAPHinsert(Graph g, Edge e){
 void GRAPHstore(Graph g, FILE *fp){
     Edge *e;
 
-    if(g == NULL) return NULL;
+    if(g == NULL) return;
     if(g->madj == NULL) return;
 
     e = malloc(g->E * sizeof(Edge));
@@ -129,7 +129,7 @@ int GRAPHgetNumE(Graph g){
 
 void dfsR(Graph g, int start, int *time, int *pre, int *post, int *isAcyclic){
     pre[start] = (*time)++;
-    for(int i; i < g->V; i++){
+    for(int i=0; i < g->V; i++){
         if(g->madj[start][i] != NO_EDGE){
             if(pre[i] == -1)
                 dfsR(g, i, time, pre, post, isAcyclic);
@@ -144,7 +144,7 @@ void dfsR(Graph g, int start, int *time, int *pre, int *post, int *isAcyclic){
 void GRAPHdfs(Graph g, int *isAcyclic){
     int *pre, *post, time=0;
 
-    if(g == NULL) return NULL;
+    if(g == NULL) return;
     if(g->madj == NULL) return;
 
     pre = calloc(g->V, sizeof(int));
@@ -189,7 +189,7 @@ void TSdfsR(Graph g, int v, int *ts, int *pre, int *time){
     int w;
     pre[v] = 0;
     for(w=0; w < g->V; w++)
-        if(g->madj[w][v] != NO_EDGE);
+        if(g->madj[w][v] != NO_EDGE)
             if(pre[w] == -1)
                 TSdfsR(g, w, ts, pre, time);
     ts[(*time)++] = v;

@@ -15,10 +15,10 @@ typedef struct htItem_t{
 
 struct hashtable{
     htItem *items;
-    int N, M;
+    int N, M;                               // N is the number of items, while M is the size of the table
 };
 
-static int sizeSet(int maxN){
+static int sizeSet(int maxN){               // determines a size which is at least twice maxN
     int primes[16] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
     if(maxN < primes[15])
         for(int i=0; i<16; i++)
@@ -27,16 +27,15 @@ static int sizeSet(int maxN){
     return -1;
 }
 
-static int hash(char *str, int M){
+static int hash(char *str, int M){          // computes hash value
     int h=0, base=127;
-    for(; *str != '\0'; str++);
+    for(; *str != '\0'; str++)
         h = (base*h + *str) % M;
     return h;
 }
 
 ST STinit(int maxN){
     ST ht;
-    int i;
     ht = malloc(sizeof(*ht));
     if(ht == NULL) return NULL;
     ht->N = 0;
@@ -48,7 +47,7 @@ ST STinit(int maxN){
     return ht;
 }
 
-void STinsert(ST ht, char *str, int index){
+void STinsert(ST ht, char *str, int index){ // linear probing insertion
     int i=hash(str, ht->M);
     while(ht->items[i].index != -1)
         i = (i+1) % ht->M;

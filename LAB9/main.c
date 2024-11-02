@@ -8,30 +8,31 @@
 
 #define MAXL 31
 #define MAXN 10
+#define FILENAME "graph4.txt"
 
 void generateSetE(Graph g);
 
-int main(int argc, char **argv){
+int main(void){
     int V, e=1, *ts;
     Graph g = NULL;
     FILE *fp;
 
-    fp = fopen(argv[1], "r");
+    fp = fopen(FILENAME, "r");
     if(fp == NULL) exit(-1);
 
     g = GRAPHload(fp);
     if(g == NULL) exit(-1);
 
-    GRAPHdfs(g, &e, 0, 0);
+    GRAPHdfs(g, &e);
     if(!e){
-        printf("Original graph is acyclic.\n\n");
+        printf("Original graph is cyclic.\n\n");
         generateSetE(g);
         printf("The resulting DAG is:\n\n");
         GRAPHstore(g, stdout);
         printf("\n");
     }
     else
-        printf("Original graph is cyclic.\n\n");
+        printf("Original graph is acyclic.\n\n");
     V = GRAPHgetNumV(g);
     ts = malloc(V*sizeof(int));
     DAGts(g, ts);
@@ -49,10 +50,10 @@ int main(int argc, char **argv){
 void comb(int pos, int *sol, Graph g, Edge *vE, int n, int k, int start, int *stop, int *bestSol, int *bestWt){
     int e=1, i, solWt;
     if(pos >= k){
-        for(i=0; i<k; i++);
+        for(i=0; i<k; i++)
             GRAPHremoveE(g, vE[sol[i]]);
         solWt = GRAPHedgesWt(g, vE, sol, k);
-        GRAPHdfs(g, &e, 0,  0);
+        GRAPHdfs(g, &e);
         if(e){
             *stop=1;
             if(solWt > *bestWt){

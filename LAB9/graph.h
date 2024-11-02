@@ -29,7 +29,7 @@ int GRAPHgetNumV(Graph g);
 int GRAPHgetNumE(Graph g);
 void GRAPHedges(Graph g, Edge *e);
 int GRAPHedgesWt(Graph g, Edge *e, int *subset, int k);
-void GRAPHdfs(Graph g, Edge *e, int *subset, int k);
+void GRAPHdfs(Graph g, int *isAcyclic);
 void GRAPHremoveE(Graph g, Edge e);
 void DAGts(Graph g, int *ts);
 void DAGmaxPath(Graph d, int *ts);
