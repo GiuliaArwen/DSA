@@ -9,22 +9,22 @@
 struct G{
     int V, E;
     int **madj;
-    ST st;
-    Vertex *arr;
+    ST st;                                              // hash table
+    Vertex *arr;                                        // array of vertex letters
 };
 
-static int **MATRIXint(int r, int c, int val){
-    int i, j, **t;
-    t = malloc(r * sizeof(int *));
-    if(t == NULL) return NULL;
+static int **MATRIXinit(int r, int c, int val){
+    int i, j, **mat;
+    mat = malloc(r * sizeof(int *));
+    if(mat == NULL) return NULL;
     for(i=0; i<r; i++){
-        t[i] = malloc(c * sizeof(int));
-        if(t[i] == NULL) return NULL;
+        mat[i] = malloc(c * sizeof(int));
+        if(mat[i] == NULL) return NULL;
     }
     for(i=0; i<r; i++)
         for(j=0; j<c; j++)
-            t[i][j] = val;
-    return t;
+            mat[i][j] = val;
+    return mat;
 }
 
 char *GETname(Vertex *v){
@@ -38,7 +38,7 @@ Graph GRAPHinit(int nV){
     g->V = nV;
     g->E = 0;
 
-    g->madj = MATRIXint(nV, nV, NO_EDGE);
+    g->madj = MATRIXinit(nV, nV, NO_EDGE);
     if(g->madj == NULL) return NULL;
 
     g->st = STinit(nV);
@@ -66,10 +66,10 @@ Graph GRAPHload(FILE *fp){
     }
 
     while(fscanf(fp, "%s %s %d", src, dst, &wt) == 3){
-        id1 = STsearch(g->st, src);
-        id2 = STsearch(g->st, dst);
-        if(id1 != id2 && id1 >= 0 && id2 >= 0)
-        GRAPHinsertE(g, EDGEcreate(id1, id2, wt));
+        id1 = STsearch(g->st, src);                     // finds index for source vertex
+        id2 = STsearch(g->st, dst);                     // finds index for destination vertex
+        if(id1 != id2 && id1 >= 0 && id2 >= 0)          // for each couple of valid different vertexes
+            GRAPHinsertE(g, EDGEcreate(id1, id2, wt));
     }
 
     return g;
@@ -100,7 +100,7 @@ void GRAPHinsertE(Graph g, Edge e){
 }
 
 void GRAPHstore(Graph g, FILE *fp){
-    Edge *e;
+    Edge *e;                                            // array of all edges
 
     if(g == NULL) return;
     if(g->madj == NULL) return;
@@ -128,21 +128,21 @@ int GRAPHgetNumE(Graph g){
 }
 
 void dfsR(Graph g, int start, int *time, int *pre, int *post, int *isAcyclic){
-    pre[start] = (*time)++;
-    for(int i=0; i < g->V; i++){
-        if(g->madj[start][i] != NO_EDGE){
-            if(pre[i] == -1)
+    pre[start] = (*time)++;                             // sets pre-order timestamp
+    for(int i=0; i < g->V; i++){                        // iterates over possible adjacent vertices
+        if(g->madj[start][i] != NO_EDGE){               // checks for connecting edges
+            if(pre[i] == -1)                            // if a new vertex is discovered, recursively call
                 dfsR(g, i, time, pre, post, isAcyclic);
             else
-                if(post[i] == -1)
-                    *isAcyclic = 0;
+                if(post[i] == -1)                       // if the vertex has been visited but not finished
+                    *isAcyclic = 0;                     // a back edge/cycle is found
         }
     }
-    post[start] = (*time)++;
+    post[start] = (*time)++;                            // finishes current vertex and increments timestamp
 }
 
 void GRAPHdfs(Graph g, int *isAcyclic){
-    int *pre, *post, time=0;
+    int *pre, *post, time=0;                            // arrays to store pre-order and post-order for each vertex
 
     if(g == NULL) return;
     if(g->madj == NULL) return;
@@ -151,9 +151,9 @@ void GRAPHdfs(Graph g, int *isAcyclic){
     post = calloc(g->V, sizeof(int));
 
     for(int i=0; i < g->V; i++)
-        pre[i] = post[i] = -1;
+        pre[i] = post[i] = -1;                          // initialization
     for(int i=0; i < g->V; i++)
-        if(pre[i] == -1)
+        if(pre[i] == -1)                                // if a vertex has not been visited calls recursive function
             dfsR(g, i, &time, pre, post, isAcyclic);
     free(pre);
     free(post);
@@ -166,7 +166,7 @@ void GRAPHedges(Graph g, Edge *e){
     if(g->E <= 0) return;
     for(int v=0; v < g->V; v++)
         for(int w=0; w < g->V; w++)
-            if(g->madj[v][w] != NO_EDGE)
+            if(g->madj[v][w] != NO_EDGE)                //  where a possible edge is missing, creates one
                 e[E++] = EDGEcreate(v, w, g->madj[v][w]);
 }
 
@@ -174,61 +174,63 @@ int GRAPHedgesWt(Graph g, Edge *e, int *subset, int k){
     int totWt = 0;
     if(g == NULL) return 0;
     for(int i=0; i<k; i++)
-        totWt += e[subset[i]].wt;
+        totWt += e[subset[i]].wt;                       // only considers a specific subset of indexes
     return totWt;
 }
 
 void GRAPHremoveE(Graph g, Edge e){
     int v = e.v, w = e.w;
     if(g->madj[v][w] != NO_EDGE)
-        g->E--;
+        g->E--;                                         // updates total number of edges
     g->madj[v][w] = NO_EDGE;
 }
 
 void TSdfsR(Graph g, int v, int *ts, int *pre, int *time){
     int w;
-    pre[v] = 0;
-    for(w=0; w < g->V; w++)
-        if(g->madj[w][v] != NO_EDGE)
-            if(pre[w] == -1)
-                TSdfsR(g, w, ts, pre, time);
-    ts[(*time)++] = v;
+    pre[v] = 0;                                         // marks v as visited
+    for(w=0; w < g->V; w++)                             // iterates over adjacent vertices
+        if(g->madj[w][v] != NO_EDGE)                    // if there is no connecting edge
+            if(pre[w] == -1)                            // and if w was not visited
+                TSdfsR(g, w, ts, pre, time);            // recursive call
+    ts[(*time)++] = v;                                  // assigns current vertex to the ordered array at the right timestamp index
 }
 
-void DAGts(Graph g, int *ts){
-    int time=0, *pre;
+void DAGts(Graph g, int *ts){                           // topological sort on Directed Acyclic Graph
+    int time=0, *pre;                                   // array to store visitation state
     pre = malloc(g->V*sizeof(int));
     if((pre == NULL) || (ts == NULL)) return;
-    for(int i=0; i < g->V; i++){
+    for(int i=0; i < g->V; i++){                        // initialization
         pre[i] = -1;
         ts[i] = -1;
     }
-    for(int i=0; i < g->V; i++)
-        if(pre[i] == -1)
-            TSdfsR(g, i, ts, pre, &time);
+    for(int i=0; i < g->V; i++)                         // iterates over each vertex
+        if(pre[i] == -1)                                // if never visited
+            TSdfsR(g, i, ts, pre, &time);               // depth first search
     free(pre);
 }
 
 void DAGmaxPath(Graph g, int *ts){
-    int v, w;
-    int *dist = malloc(g->V * sizeof(int));
+    int i, j, k, v, w;
+    int *dist = malloc(g->V * sizeof(int));             // array to store maximum distance
 
-    for(int i=0; i<g->V; i++){
-        v = ts[i];
+    for(i=0; i<g->V; i++){
+        v = ts[i];                                      // follows topological order
         printf("Start: %s\n", GETname(&(g->arr[v])));
-        for(int j=0; j<g->V; j++) dist[j] = -1;
-        dist[v] = 0;
-        for(int j=i; j<g->V; j++){
+        for(j=0; j<g->V; j++)
+            dist[j] = -1;                               // initialization
+        dist[v] = 0;                                    // self-distance
+        for(j=i; j<g->V; j++){                          // iterates following v
             w = ts[j];
-            if(dist[w] == -1) continue;
-            for(int k=0; k<g->V; k++){
-                if(g->madj[w][k] != NO_EDGE)
+            if(dist[w] == -1)                           // skips if unreachable
+                continue;
+            for(k=0; k<g->V; k++){                      // checks if the new distance is greater than the current one
+                if(g->madj[w][k] != NO_EDGE)            // updates if it is the first time distance is calculated or if it is greater
                     if(dist[k] == -1 || (dist[w] + g->madj[w][k]) > dist[k])
                         dist[k] = dist[w] + g->madj[w][k];
             }
         }
-        for(int j=0; j<g->V; j++){
-            if(j == v) continue;
+        for(j=0; j<g->V; j++){
+            if(j == v) continue;                        // terminates on the current vertex
             printf("\t -> %s [%d]\n", GETname(&(g->arr[j])), dist[j]);
         }
     }

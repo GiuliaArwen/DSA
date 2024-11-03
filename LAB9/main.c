@@ -53,16 +53,16 @@ void comb(int pos, int *sol, Graph g, Edge *vE, int n, int k, int start, int *st
         for(i=0; i<k; i++)
             GRAPHremoveE(g, vE[sol[i]]);
         solWt = GRAPHedgesWt(g, vE, sol, k);
-        GRAPHdfs(g, &e);
-        if(e){
+        GRAPHdfs(g, &e);            // DAG check
+        if(e){                      // valid solution
             *stop=1;
-            if(solWt > *bestWt){
+            if(solWt > *bestWt){    // updates best case
                 *bestWt = solWt;
                 for(i=0; i<k; i++)
                     bestSol[i] = sol[i];
             }
         }
-        for(i=0; i<k; i++)
+        for(i=0; i<k; i++)          // backtrack with restoration
             GRAPHinsertE(g, vE[sol[i]]);
         return;
     }
@@ -72,11 +72,11 @@ void comb(int pos, int *sol, Graph g, Edge *vE, int n, int k, int start, int *st
     }
 }
 
-void generateSetE(Graph g){
+void generateSetE(Graph g){         // identifies a set of edges that can be removed to maximize the weight ensuring the graph stays acyclic
     int i, j, E=GRAPHgetNumE(g), V=GRAPHgetNumV(g), stop=0, bestWt=0, *sol;
     Edge *vE = malloc(E*sizeof(Edge));
     int *bestSol = calloc(E, sizeof(int));
-    int upper_bound = E - (V-1);
+    int upper_bound = E - (V-1);    // maximum number of edges that can be removed
     if(upper_bound <= 0) return;
     printf("\nV=%d, E=%d, maximum number of edges to remove %d\n", V, E, upper_bound);
     GRAPHedges(g, vE);
